@@ -7,11 +7,11 @@ require './model.rb'
 enable :sessions
 
 get('/') do
-  slim(:index)
+  slim(:"albums/index")
 end
 
 get('/showlogin') do #inte skapat denna ännu men det ska vara dit man kommer/behörigheten som man får om man lyckats logga in
-  slim(:login)
+  slim(:"albums/login")
 end
 
 post('/login') do
@@ -31,6 +31,10 @@ post('/login') do
   end
 
 end
+
+get("showregister") do
+  slim(:albums/register)
+
 post('/register') do
   username = params[:username]
   password = params[:password]
