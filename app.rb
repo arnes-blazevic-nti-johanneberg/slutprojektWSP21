@@ -7,20 +7,24 @@ require './model.rb'
 enable :sessions
 
 get('/') do
-  slim(:"albums/index")
+  slim(:"index")
 end
 
 get('/showlogin') do #inte skapat denna ännu men det ska vara dit man kommer/behörigheten som man får om man lyckats logga in
-  slim(:"albums/login")
+  slim(:"login")
+end
+
+get("/hem") do 
+  slim(:"hem")
 end
 
 post('/login') do
   username = params[:username]
   password = params[:password]
-  db = SQLite3::Database.new('db/slutprojekt.db')
+  db = SQLite3::Database.new("db/slutprojekt.db") #?????scbpro????
   db.results_as_hash = true
-  result = db.execute('SELECT * FROM users WHERE username = ?', username).first
-  pwdigest = result['password']
+  result = db.execute("SELECT * FROM users WHERE username = ?", username).first
+  pwdigest = result["password"]
   id = result['id']
 
   if BCrypt::Password.new(password) == password
@@ -29,11 +33,11 @@ post('/login') do
   else
     "Du har inte angett rätt lösenord"
   end
-
 end
 
 get("showregister") do
-  slim(:albums/register)
+  slim(:"register")
+end
 
 post('/register') do
   username = params[:username]
@@ -41,10 +45,39 @@ post('/register') do
   password_confirm = params[:password_confirm]
   if (password == password_confirm)
     password_digest = BCrypt::Password.create(password)
-    db = SQLite3::Database.new('db/slutprojekt.db')
+    db = SQLite3::Database.new("db/slutprojekt.db") #??????scbpro????
     db.execute("INSERT INTO users (username,password) VALUES (?,?)", username, password)
     redirect("/hem") #inte klar denna delen ännu, #inte skapat denna ännu men det ska vara dit man kommer/behörigheten som man får om man lyckats logga in
   else
     "Lösenordet matchade inte!"
   end
 end
+
+get("/books_read") do
+  id = session[:id].to_i #kopplar till databas och hämtar info om vem som är inloggad
+  db = SQLite3::Database.new('db/slutprojekt.db')
+  db.results_as_hash = true
+  result = db.execute("SELECT * FROM boks_read WHERE users_id = ?",id)    #osäker på just denna kopplingen till databasen, använda min många till många relation här?
+  p "Alla dina lästa bäcker från result #{result}" #använda min många till många relation här? books_title & users relationen
+  slim(:"booksread",locals{books_read:result})
+end
+
+post('/books_read/delete') do
+  id = params[:number]
+  user_id = session[:id].to_i
+  db = SQLite3::Database.new('db/slutprojekt.db')
+  db.execute("DELETE FROM books_read WHERE id = ?", id)
+  redirect('/books_read')
+end
+
+post('/books_read/new') do
+  content = params[:content]
+  userid = session[:id].to_i
+  db = SQLite3::Database.new('db/slutprojekt.db')
+  db.results_as_hash = true
+  db.execute("INSERT INTO users (books_read) VALUES (?,)",books_read)
+  redirect('/books_read')
+end
+
+
+#jag vill sedan att man ska kunna söka efter böcker och hitta liknande böcker, 

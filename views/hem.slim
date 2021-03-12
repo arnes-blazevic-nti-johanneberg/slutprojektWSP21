@@ -1,0 +1,8 @@
+h2 detta är huvudsidan
+h2 böckerna som du har läst är #{session[:id]}
+
+ol
+    - todos.each do |books_read|    # för att komma åt alla todos, nyckeln är todos
+    p = books_read[:content]  # ska stå något annant än content
+
+
