@@ -11,7 +11,7 @@ get('/') do
 end
 
 get('/showlogin') do #inte skapat denna ännu men det ska vara dit man kommer/behörigheten som man får om man lyckats logga in
-  slim(:"login")
+  slim(:"users/register")
 end
 
 get("/hem") do 
@@ -19,17 +19,27 @@ get("/hem") do
 end
 
 post('/login') do
+  #if session[:now]
+    #time = session[:now].split("_")
+    #if Time.new(time[0], time[1], time[2], time[3], time[4], time[5]) > (Time.now - 300)
+       # set_error("Du måste 5 minuter tills du får försöka igen, bättre lycka till nästa gång")
+       # redirect("/error")
+    #end
+#end
+
+
+
   username = params[:username]
   password = params[:password]
   db = SQLite3::Database.new("db/slutprojekt.db") #?????scbpro????
   db.results_as_hash = true
   result = db.execute("SELECT * FROM users WHERE username = ?", username).first
   pwdigest = result["password"]
-  id = result['id']
+  id = result["id"]
 
   if BCrypt::Password.new(password) == password
     session[:id] = id
-    redirect('/hem') # inte klar med denna delen ännu, #inte skapat denna ännu men det ska vara dit man kommer/behörigheten som man får om man lyckats logga in
+    redirect("/hem") # inte klar med denna delen ännu, #inte skapat denna ännu men det ska vara dit man kommer/behörigheten som man får om man lyckats logga in
   else
     "Du har inte angett rätt lösenord"
   end
