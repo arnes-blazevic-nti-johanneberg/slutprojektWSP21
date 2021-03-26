@@ -1,8 +1,26 @@
-h2 detta är huvudsidan
-h2 böckerna som du har läst är #{session[:id]}
+h2 Hej #{session[:id]} detta är din huvudsida 
+h2 Böckerna som du har läst är
+
+
+
 
 ol
-    - todos.each do |books_read|    # för att komma åt alla todos, nyckeln är todos
-    p = books_read[:content]  # ska stå något annant än content
+    - books_read.each do |books_read|    
+        p = books_read["content"] 
 
 
+        li 
+            p = books_read["content"]
+            form action="books_read/delete" method="POST" 
+                input type="hidden" name="number" value="#{books_read["id"]}"
+                input type="submit" value="Delete"
+            form action="books_read/edit" method="POST"
+                input type="hidden" name="number" value="#{books_read["id"]}"
+                input type="text" name="content" placeholder="Skriv en uppdatering om läst bok"
+                input type="submit" value="förändra" 
+    
+
+            form action="books_read/new" method="POST"
+                input type="text" name="content" placeholder="lägg till en ny läst bok"
+                input type="submit" value="spara"
+   

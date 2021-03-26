@@ -14,9 +14,10 @@ get('/showlogin') do #inte skapat denna ännu men det ska vara dit man kommer/be
   slim(:"login")
 end
 
-get("/hem") do 
-  slim(:"hem")
-end
+# "get('/homepage') do 
+  #"slim(:"hem",locals:{books_read:result})
+
+#end
 
 post('/login') do
   #if session[:now]
@@ -39,7 +40,7 @@ post('/login') do
 
   if BCrypt::Password.new(pwdigest) == password
     session[:id] = id
-    redirect("/hem") # inte klar med denna delen ännu, #inte skapat denna ännu men det ska vara dit man kommer/behörigheten som man får om man lyckats logga in
+    redirect("/books_read") # inte klar med denna delen ännu, #inte skapat denna ännu men det ska vara dit man kommer/behörigheten som man får om man lyckats logga in
   else
     "Du har inte angett rätt lösenord"
   end
@@ -57,7 +58,7 @@ post('/users') do
     password_digest = BCrypt::Password.create(password)
     db = SQLite3::Database.new("db/slutprojekt.db") #??????scbpro????
     db.execute("INSERT INTO users (username, pw_digest) VALUES (?,?)", username, password_digest)
-    redirect("/hem") #inte klar denna delen ännu, #inte skapat denna ännu men det ska vara dit man kommer/behörigheten som man får om man lyckats logga in
+    redirect("/homepage") #inte klar denna delen ännu, #inte skapat denna ännu men det ska vara dit man kommer/behörigheten som man får om man lyckats logga in
   else
     "Lösenordet matchade inte!"
   end
@@ -67,9 +68,9 @@ get("/books_read") do
   id = session[:id].to_i #kopplar till databas och hämtar info om vem som är inloggad
   db = SQLite3::Database.new('db/slutprojekt.db')
   db.results_as_hash = true
-  result = db.execute("SELECT * FROM boks_read WHERE users_id = ?",id)    #osäker på just denna kopplingen till databasen, använda min många till många relation här?
+  result = db.execute("SELECT * FROM books_read WHERE user_id = ?",id)    #osäker på just denna kopplingen till databasen, använda min många till många relation här?
   p "Alla dina lästa bäcker från result #{result}" #använda min många till många relation här? books_title & users relationen
-  slim(:"booksread",locals{books_read:result})
+  slim(:"hem",locals:{books_read:result})
 end
 
 post('/books_read/delete') do
@@ -85,7 +86,7 @@ post('/books_read/new') do
   userid = session[:id].to_i
   db = SQLite3::Database.new('db/slutprojekt.db')
   db.results_as_hash = true
-  db.execute("INSERT INTO users (books_read) VALUES (?,)",books_read)
+  db.execute("INSERT INTO books_read (content) VALUES (?,)",books_read)
   redirect('/books_read')
 end
 
