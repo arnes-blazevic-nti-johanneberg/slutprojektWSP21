@@ -1,4 +1,5 @@
 h2 Hej #{session[:id]} detta är din huvudsida 
+/fixa så att det ändras från att visa id som ditt namn till att istället visa username
 h2 Böckerna som du har läst är
 
 
@@ -6,7 +7,6 @@ h2 Böckerna som du har läst är
 
 ol
     - books_read.each do |books_read|    
-        p = books_read["content"] 
 
 
         li 
@@ -20,7 +20,8 @@ ol
                 input type="submit" value="förändra" 
     
 
-            form action="books_read/new" method="POST"
-                input type="text" name="content" placeholder="lägg till en ny läst bok"
-                input type="submit" value="spara"
+form action="books_read/new" method="POST"
+    input type="text" name="content" placeholder="lägg till en ny läst bok"
+    input type="submit" value="spara"
+
    
