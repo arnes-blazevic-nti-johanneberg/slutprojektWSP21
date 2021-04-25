@@ -6,11 +6,21 @@ require './model.rb'
 
 enable :sessions
 
-before do 
-  if (session[:user_id] ==  nil) && (request.path_info != '/')
-  redirect("/")
-end
-end
+
+#before do 
+ # if (session[:user_id] ==  nil) && (request.path_info != '/') && (request.path_info != '/showlogin' && (request.path_info != '/error')) 
+  #  redirect("/")
+  #end
+# end
+
+#before do 
+ # if ((session[:user_id] ==  nil) && (request.path_info != '/') && (request.path_info != '/showregister') && (request.path_info != '/showlogin'))
+  #redirect("/")
+  #nd
+#end
+
+
+
 
 
 get('/') do
@@ -23,10 +33,9 @@ get('/showlogin') do #inte skapat denna ännu men det ska vara dit man kommer/be
   slim(:"login")
 end
 
-# "get('/homepage') do 
-  #"slim(:"hem",locals:{books_read:result})
-
-#end
+get('/homepage') do 
+  slim(:"hem",locals:{books_read:result})
+end
 
 post('/login') do
   #if session[:now]
@@ -113,3 +122,25 @@ post('/books_read/edit') do
   redirect('/books_read') #/hem istället för books read
 end
 #jag vill sedan att man ska kunna söka efter böcker och hitta liknande böcker, 
+
+get("/newbooks") do
+  db = SQLite3::Database.new('db/slutprojekt.db')
+  db.results_as_hash = true
+  result = db.execute("SELECT * FROM genre" )
+  slim(:"newbooks",locals:{genre:result})
+
+end
+
+post("/newbooks") do
+  db = SQLite3::Database.new('db/slutprojekt.db')
+  db.results_as_hash = true
+  result= db.execute("SELECT * FROM genre,")
+  redirect('/findnewbooks')
+end
+
+post("/newbooks") do
+genre_id = params[:genre_id]
+db = SQLite3::Database.new('db/slutprojekt.db')
+  db.results_as_hash = true
+  result = db.execute("SELECT * FROM books_read WHERE genre_id = ?,",genre_id)
+end

@@ -2,8 +2,8 @@ h2 Hej #{session[:id]} detta är din huvudsida
 /fixa så att det ändras från att visa id som ditt namn till att istället visa username
 h2 Böckerna som du har läst är
 
-
-
+a href="/newbooks" 
+    button Hitta nya böcker att läsa
 
 ol
     - books_read.each do |books_read|    
