@@ -8,16 +8,11 @@ enable :sessions
 
 
 #before do 
- # if (session[:user_id] ==  nil) && (request.path_info != '/') && (request.path_info != '/showlogin' && (request.path_info != '/error')) 
-  #  redirect("/")
-  #end
-# end
-
-#before do 
- # if ((session[:user_id] ==  nil) && (request.path_info != '/') && (request.path_info != '/showregister') && (request.path_info != '/showlogin'))
-  #redirect("/")
-  #nd
+#  if (session[:user_id] ==  nil) && (request.path_info != '/' && (request.path_info != '/showlogin' && (request.path_info != '//showregister')))
+#  redirect("/")
+#  end
 #end
+
 
 
 
@@ -45,9 +40,6 @@ post('/login') do
        # redirect("/error")
     #end
 #end
-
-
-
   username = params[:username]
   password = params[:password]
   db = SQLite3::Database.new("db/slutprojekt.db") #?????scbpro????
@@ -61,14 +53,20 @@ post('/login') do
     redirect("/books_read") # inte klar med denna delen ännu, #inte skapat denna ännu men det ska vara dit man kommer/behörigheten som man får om man lyckats logga in
   else
     "Du har inte angett rätt lösenord"
+    redirect("/")
   end
+end
+
+get("/logout") do
+  session[:id] = nil
+  redirect("/")
 end
 
 get("/showregister") do
   slim(:"register")
 end
 
-post('/users') do
+post('/users/new') do
   username = params[:username]
   password = params[:password]
   password_confirm = params[:password_confirm]
@@ -76,9 +74,9 @@ post('/users') do
     password_digest = BCrypt::Password.create(password)
     db = SQLite3::Database.new("db/slutprojekt.db") #??????scbpro????
     db.execute("INSERT INTO users (username, pw_digest) VALUES (?,?)", username, password_digest)
-    redirect("/homepage") #inte klar denna delen ännu, #inte skapat denna ännu men det ska vara dit man kommer/behörigheten som man får om man lyckats logga in
+    redirect("/books_read") #inte klar denna delen ännu, #inte skapat denna ännu men det ska vara dit man kommer/behörigheten som man får om man lyckats logga in
   else
-    "Lösenordet matchade inte!"
+    "Lösenordet matchade inte!, backa och försökt igen"
   end
 end
 
@@ -119,11 +117,12 @@ post('/books_read/edit') do
   user_id = session[:id].to_i
   db = SQLite3::Database.new('db/slutprojekt.db')
   db.results_as_hash = true
-  db.execute("INSERT INTO books_read (content, user_id) VALUES (?,?)")
+  db.execute("UPDATE books_read SET content = ? WHERE id = ?", content, id)
+  
+#db.execute("INSERT INTO books_read (content, user_id, genre_id) VALUES (?,?,?)", content, user_id, genre_id)
  # user_id) content   selct from     delete content from books_read (content,) where id = ?, (id) 
   redirect('/books_read') #/hem istället för books read
 end
-#jag vill sedan att man ska kunna söka efter böcker och hitta liknande böcker, 
 
 get("/newbooks") do
   db = SQLite3::Database.new('db/slutprojekt.db')
@@ -132,16 +131,29 @@ get("/newbooks") do
   slim(:"newbooks",locals:{genre:result})
 end
 
-post("/newbooks") do
-  db = SQLite3::Database.new('db/slutprojekt.db')
-  db.results_as_hash = true
-  result= db.execute("SELECT * FROM genre,")
-  redirect('/findnewbooks')
-end
 
 post("/newbooks") do
-genre_id = params[:genre_id]
-db = SQLite3::Database.new('db/slutprojekt.db')
+  genre_id = params[:genre_id]
+  db = SQLite3::Database.new('db/slutprojekt.db')
   db.results_as_hash = true
-  result = db.execute("SELECT * FROM books_read WHERE genre_id = ?,",genre_id)
+  result = db.execute("SELECT * FROM books_read WHERE genre_id = ?",genre_id)
 end
+# väljer en bok av alternativen som kommer fram och sedan lägger till den till min privata lista med böcker som jag har läst
+# content = params[:content]
+# genre_id = params[:genre_id]
+#user_id = session[:id]
+#db.execute("INSERT INTO books_read (content, user_id, genre_id) VALUES (?,?,?)", content, user_id, genre_id)
+
+
+
+
+# Visar alla användare som har en specifik bok för att få till många till många situation där 1 bok kan ha flera ägare
+
+# select * user_id som har samma bok ID'
+
+
+# göra om mina tabbeller där flera personer kan läsa samma bok och inte har varsinn.
+
+# Fixa så att min before Do faktiskt funkar då den just nu verkar bugga och endast godkänner vissa sidor men itne alla
+
+# Skapa så att man kan ha en Admin roll så att den kan komma åt alla perssoner info
