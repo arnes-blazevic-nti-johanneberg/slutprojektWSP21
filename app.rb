@@ -87,8 +87,9 @@ get("/books_read") do
     db = SQLite3::Database.new('db/slutprojekt.db')
     db.results_as_hash = true
     result = db.execute("SELECT * FROM books_read WHERE user_id = ?",id)    #osäker på just denna kopplingen till databasen, använda min många till många relation här?
+    result2 = db.execute("SELECT * FROM genre" )
     p "Alla dina lästa bäcker från result #{result}" #använda min många till många relation här? books_title & users relationen
-    slim(:"hem",locals:{books_read:result})
+    slim(:"hem",locals:{books_read:result, genre:result2})
   else 
     redirect('/') #gjorde detta
   end
@@ -104,11 +105,12 @@ end
 
 post('/books_read/new') do
   content = params[:content]
+  genre_id = params[:genre_id]
   user_id = session[:id].to_i
-  p "Inloggadf har id #{user_id}"
+  p "Inloggad har id #{user_id}"
   db = SQLite3::Database.new('db/slutprojekt.db')
   db.results_as_hash = true
-  db.execute("INSERT INTO books_read (content, user_id) VALUES (?,?)", content, user_id)
+  db.execute("INSERT INTO books_read (content, user_id, genre_id) VALUES (?,?,?)", content, user_id, genre_id)
   redirect('/books_read') #/hem istället för books read
 end
 
@@ -128,7 +130,6 @@ get("/newbooks") do
   db.results_as_hash = true
   result = db.execute("SELECT * FROM genre" )
   slim(:"newbooks",locals:{genre:result})
-
 end
 
 post("/newbooks") do
