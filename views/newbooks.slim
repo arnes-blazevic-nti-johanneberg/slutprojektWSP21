@@ -1,7 +1,7 @@
 h2 här kan du välja vilka genrer som du vill hitta böcker om
 form action="/newbooks" method="POST"
     <select name="genre_id">
-        - genre.each do |genre|
-            option name="genre_id" value="#{genre['genre_id']}" = genre["genre_name"]
+        - genre.each do |new_book|
+            option name="genre_id" value="#{new_book['genre_id']}" = new_book["genre_name"]
 
     input type="submit"

@@ -8,7 +8,7 @@ enable :sessions
 
 
 #before do 
-#  if (session[:user_id] ==  nil) && (request.path_info != '/' && (request.path_info != '/showlogin' && (request.path_info != '//showregister')))
+#  if (session[:user_id] ==  nil) && (request.path_info != '/' && (request.path_info != '/showlogin' && (request.path_info != '/showregister' && (request.path_info != '/login' && (request.path_info != '/users/new')))))
 #  redirect("/")
 #  end
 #end
@@ -49,6 +49,7 @@ post('/login') do
   id = result["id"]
 
   if BCrypt::Password.new(pwdigest) == password
+    puts "hej"
     session[:id] = id
     redirect("/books_read") # inte klar med denna delen ännu, #inte skapat denna ännu men det ska vara dit man kommer/behörigheten som man får om man lyckats logga in
   else
@@ -82,6 +83,7 @@ end
 
 get("/books_read") do
   if  id = session[:id].to_i #kopplar till databas och hämtar info om vem som är inloggad
+    puts "test"
     db = SQLite3::Database.new('db/slutprojekt.db')
     db.results_as_hash = true
     result = db.execute("SELECT * FROM books_read WHERE user_id = ?",id)    #osäker på just denna kopplingen till databasen, använda min många till många relation här?
@@ -114,10 +116,11 @@ end
 
 post('/books_read/edit') do
   content = params[:content]
+  id = params[:number]
   user_id = session[:id].to_i
   db = SQLite3::Database.new('db/slutprojekt.db')
   db.results_as_hash = true
-  db.execute("UPDATE books_read SET content = ? WHERE id = ?", content, id)
+  db.execute("UPDATE books_read SET content = ? WHERE id = ?", content, id)###### Den ändrar allt
   
 #db.execute("INSERT INTO books_read (content, user_id, genre_id) VALUES (?,?,?)", content, user_id, genre_id)
  # user_id) content   selct from     delete content from books_read (content,) where id = ?, (id) 
@@ -134,10 +137,17 @@ end
 
 post("/newbooks") do
   genre_id = params[:genre_id]
+  puts "#{genre_id}"
   db = SQLite3::Database.new('db/slutprojekt.db')
   db.results_as_hash = true
   result = db.execute("SELECT * FROM books_read WHERE genre_id = ?",genre_id)
+  slim(:"newbooks",locals:{genre:result, })
 end
+
+
+
+
+
 # väljer en bok av alternativen som kommer fram och sedan lägger till den till min privata lista med böcker som jag har läst
 # content = params[:content]
 # genre_id = params[:genre_id]
