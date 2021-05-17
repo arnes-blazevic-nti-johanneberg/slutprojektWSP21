@@ -142,6 +142,16 @@ post("/newbooks") do
   db.results_as_hash = true
   result = db.execute("SELECT * FROM books_read WHERE genre_id = ?",genre_id)
   slim(:"newbooks",locals:{genre:result, })
+  redirect("/newbooks/genre") #jag vill nog bli redirectat till ny sida som visar all denna infon med vald informaiton
+end
+
+get("/newbooks/genre") do #jag vill skapa en ny sida som visar vald genre från förra sidan
+  id = params[:genre_id]
+  db = SQLite3::Database.new('db/slutprojekt.db')
+  db.results_as_hash = true
+  result = db.execute("SELECT * FROM books_read WHERE genre_id = ?",id)   #id #osäker hur detta blir/ska fungera
+  puts result
+  slim(:"new", locals:{books_read:result})
 end
 
 
