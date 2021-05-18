@@ -136,9 +136,10 @@ end
 
 
 post("/newbooks") do
-  genre_id = params[:genre_id]
+  genre_id = params[:genre_name]
   session[:genre_id] = genre_id
   puts "#{genre_id}"
+  puts "---------------------"
   db = SQLite3::Database.new('db/slutprojekt.db')
   db.results_as_hash = true
   result = db.execute("SELECT * FROM books_read WHERE genre_id = ?",genre_id)
@@ -147,8 +148,7 @@ post("/newbooks") do
 end
 
 get("/newbooks/genre") do #jag vill skapa en ny sida som visar vald genre från förra sidan
-  #genre_id = session[:genre_id]
-  genre_id = 1
+  genre_id = session[:genre_id]
   db = SQLite3::Database.new('db/slutprojekt.db')
   db.results_as_hash = true
   result = db.execute("SELECT * FROM books_read WHERE genre_id = ?",genre_id)   #id #osäker hur detta blir/ska fungera
