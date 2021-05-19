@@ -7,29 +7,38 @@ require './model.rb'
 enable :sessions
 
 
-#before do 
-#  if (session[:user_id] ==  nil) && (request.path_info != '/' && (request.path_info != '/showlogin' && (request.path_info != '/showregister' && (request.path_info != '/login' && (request.path_info != '/users/new')))))
-#  redirect("/")
-#  end
-#end
+before do 
+  if (session[:id] ==  nil) && (request.path_info != '/') && (request.path_info != '/showlogin' && (request.path_info != '/showregister') && (request.path_info != '/login') && (request.path_info != '/users/new'))
+    redirect("/")
+  end
+end
 
 
-
-
+get("/error") do
+  slim(:error)
+end
 
 
 get('/') do
-  slim(:"index")
+  if (session[:id] !=  nil)
+    redirect("books_read")
+  else
+    slim(:"index")
+  end
 end
 
 
 
 get('/showlogin') do #inte skapat denna ännu men det ska vara dit man kommer/behörigheten som man får om man lyckats logga in
-  slim(:"login")
+  if (session[:id] !=  nil)
+    redirect("books_read")
+  else
+    slim(:"users/login")
+  end
 end
 
 get('/homepage') do 
-  slim(:"hem",locals:{books_read:result})
+  slim(:"index",locals:{books_read:result})
 end
 
 post('/login') do
@@ -64,7 +73,11 @@ get("/logout") do
 end
 
 get("/showregister") do
-  slim(:"register")
+  if (session[:id] !=  nil)
+    redirect("books_read")
+  else
+    slim(:"users/register")
+  end
 end
 
 post('/users/new') do
@@ -89,7 +102,7 @@ get("/books_read") do
     result = db.execute("SELECT * FROM books_read WHERE user_id = ?",id)    #osäker på just denna kopplingen till databasen, använda min många till många relation här?
     result2 = db.execute("SELECT * FROM genre" )
     p "Alla dina lästa bäcker från result #{result}" #använda min många till många relation här? books_title & users relationen
-    slim(:"hem",locals:{books_read:result, genre:result2})
+    slim(:"books/index",locals:{books_read:result, genre:result2})
   else 
     redirect('/') #gjorde detta
   end
@@ -127,15 +140,15 @@ post('/books_read/edit') do
   redirect('/books_read') #/hem istället för books read
 end
 
-get("/newbooks") do
+get("/books/findbooks/index") do
   db = SQLite3::Database.new('db/slutprojekt.db')
   db.results_as_hash = true
   result = db.execute("SELECT * FROM genre" )
-  slim(:"newbooks",locals:{genre:result})
+  slim(:"books/findbooks/index",locals:{genre:result})
 end
 
 
-post("/newbooks") do
+post("/books/findbooks/index") do
   genre_id = params[:genre_name]
   session[:genre_id] = genre_id
   puts "#{genre_id}"
@@ -143,19 +156,18 @@ post("/newbooks") do
   db = SQLite3::Database.new('db/slutprojekt.db')
   db.results_as_hash = true
   result = db.execute("SELECT * FROM books_read WHERE genre_id = ?",genre_id)
-  slim(:"newbooks",locals:{genre:result})
-  redirect("/newbooks/genre") #jag vill nog bli redirectat till ny sida som visar all denna infon med vald informaiton
+  slim(:"books/findbooks/index",locals:{genre:result})
+  redirect("/books/findbooks:genre_id") #jag vill nog bli redirectat till ny sida som visar all denna infon med vald informaiton
 end
 
-get("/newbooks/genre") do #jag vill skapa en ny sida som visar vald genre från förra sidan
+get("/books/findbooks:genre_id") do #jag vill skapa en ny sida som visar vald genre från förra sidan
   genre_id = session[:genre_id]
   db = SQLite3::Database.new('db/slutprojekt.db')
   db.results_as_hash = true
   result = db.execute("SELECT * FROM books_read WHERE genre_id = ?",genre_id)   #id #osäker hur detta blir/ska fungera
   puts result
-  slim(:"new",locals:{books_read:result})
+  slim(:"books/findbooks/show",locals:{books_read:result})
 end
-
 
 
 
