@@ -51,9 +51,7 @@ post('/login') do
 #end
   username = params[:username]
   password = params[:password]
-  db = SQLite3::Database.new("db/slutprojekt.db") #?????scbpro????
-  db.results_as_hash = true
-  result = db.execute("SELECT * FROM users WHERE username = ?", username).first
+  result = login(username, password)          
   pwdigest = result["pw_digest"]
   id = result["id"]
 
@@ -83,15 +81,8 @@ end
 post('/users/new') do
   username = params[:username]
   password = params[:password]
-  password_confirm = params[:password_confirm]
-  if (password == password_confirm)
-    password_digest = BCrypt::Password.create(password)
-    db = SQLite3::Database.new("db/slutprojekt.db") #??????scbpro????
-    db.execute("INSERT INTO users (username, pw_digest) VALUES (?,?)", username, password_digest)
-    redirect("/books_read") #inte klar denna delen ännu, #inte skapat denna ännu men det ska vara dit man kommer/behörigheten som man får om man lyckats logga in
-  else
-    "Lösenordet matchade inte!, backa och försökt igen"
-  end
+  password_confirm = params[:password_confirm]          #fixat model på denna
+  register(username, password, password_confirm)
 end
 
 get("/books_read") do
@@ -99,7 +90,7 @@ get("/books_read") do
     puts "test"
     db = SQLite3::Database.new('db/slutprojekt.db')
     db.results_as_hash = true
-    result = db.execute("SELECT * FROM books_read WHERE user_id = ?",id)    #osäker på just denna kopplingen till databasen, använda min många till många relation här?
+    result = db.execute("SELECT * FROM books_read WHERE user_id = ?",id)    #osäker på just denna kopplingen till databasen, använda min många till många relation här? #lyckades inte fixa model på denna
     result2 = db.execute("SELECT * FROM genre" )
     p "Alla dina lästa bäcker från result #{result}" #använda min många till många relation här? books_title & users relationen
     slim(:"books/index",locals:{books_read:result, genre:result2})
@@ -108,36 +99,30 @@ get("/books_read") do
   end
 end
 
+
+
 post('/books_read/delete') do
   id = params[:number]  # skapa en if sats om man kommer in med rätt inlgogning
   user_id = session[:id].to_i
-  db = SQLite3::Database.new('db/slutprojekt.db')
-  db.execute("DELETE FROM books_read WHERE id = ?", id)
+  delete_post(id)                             # Gjort model.rb på denna
   redirect('/books_read')
 end
 
 post('/books_read/new') do
   content = params[:content]
-  genre_id = params[:genre_id]
+  genre_id = params[:genre_id]              # Gjort model.rb på denna
   user_id = session[:id].to_i
   p "Inloggad har id #{user_id}"
-  db = SQLite3::Database.new('db/slutprojekt.db')
-  db.results_as_hash = true
-  db.execute("INSERT INTO books_read (content, user_id, genre_id) VALUES (?,?,?)", content, user_id, genre_id)
-  redirect('/books_read') #/hem istället för books read
+  new_post(content, user_id, genre_id)
+  redirect('/books_read')
 end
 
 post('/books_read/edit') do
   content = params[:content]
   id = params[:number]
-  user_id = session[:id].to_i
-  db = SQLite3::Database.new('db/slutprojekt.db')
-  db.results_as_hash = true
-  db.execute("UPDATE books_read SET content = ? WHERE id = ?", content, id)###### Den ändrar allt
-  
-#db.execute("INSERT INTO books_read (content, user_id, genre_id) VALUES (?,?,?)", content, user_id, genre_id)
- # user_id) content   selct from     delete content from books_read (content,) where id = ?, (id) 
-  redirect('/books_read') #/hem istället för books read
+  user_id = session[:id].to_i             # Gjort model.rb på denna
+  update_post(content, id)
+  redirect('/books_read')
 end
 
 get("/books/findbooks/index") do
@@ -151,21 +136,15 @@ end
 post("/books/findbooks/index") do
   genre_id = params[:genre_name]
   session[:genre_id] = genre_id
-  puts "#{genre_id}"
-  puts "---------------------"
-  db = SQLite3::Database.new('db/slutprojekt.db')
-  db.results_as_hash = true
-  result = db.execute("SELECT * FROM books_read WHERE genre_id = ?",genre_id)
-  slim(:"books/findbooks/index",locals:{genre:result})
+  puts "#{genre_id}"                                #Gjort model på denna
+  result = find_new_books(genre_id)
+  slim(:"books/findbooks/index",locals:{genre:result})          
   redirect("/books/findbooks:genre_id") #jag vill nog bli redirectat till ny sida som visar all denna infon med vald informaiton
 end
 
 get("/books/findbooks:genre_id") do #jag vill skapa en ny sida som visar vald genre från förra sidan
-  genre_id = session[:genre_id]
-  db = SQLite3::Database.new('db/slutprojekt.db')
-  db.results_as_hash = true
-  result = db.execute("SELECT * FROM books_read WHERE genre_id = ?",genre_id)   #id #osäker hur detta blir/ska fungera
-  puts result
+  genre_id = session[:genre_id]                                    #Gjort model på denna
+  result = find_new_books_genres()
   slim(:"books/findbooks/show",locals:{books_read:result})
 end
 
