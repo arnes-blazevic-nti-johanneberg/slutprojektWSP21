@@ -71,6 +71,15 @@ def login(username, password)
     return result
 end
 
+def already_logged_in()
+    if session[:id] != nil
+      return true
+    else
+      return false
+    end
+end
+
+
 
 
 

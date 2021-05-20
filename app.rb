@@ -19,14 +19,25 @@ get("/error") do
 end
 
 
-get('/') do
-  if (session[:id] !=  nil)
-    redirect("books_read")
-  else
-    slim(:"index")
-  end
-end
+#get('/') do
+ # if (session[:id] !=  nil)
+#    redirect("books_read")
+#  else
+#    slim(:"index")
+#  end
+#end
 
+
+get ('/') do
+    if already_logged_in() == true
+        db = connect_to_db("db/slutprojekt.db")
+        result = db.execute("SELECT * FROM books_read")
+        redirect("books_read")
+    else
+        # session[:error] = nil
+        slim(:"/index")
+    end
+end
 
 
 get('/showlogin') do #inte skapat denna ännu men det ska vara dit man kommer/behörigheten som man får om man lyckats logga in
@@ -65,8 +76,9 @@ post('/login') do
   end
 end
 
+
 get("/logout") do
-  session[:id] = nil
+  session.destroy
   redirect("/")
 end
 
